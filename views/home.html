@@ -25,14 +25,25 @@
       <div class="container">
          <div class="row">
             <div class="col">
-               <div class="card" style="width: 18rem;">
+         <hr>
+         <h2>Latest Updates</h2>
+         <div class="all_posts">
+             {% if allpost is empty %}
+             <h4>Not post found!</h4>
+             {% else %}
+                 {% for post in allpost %}
+                 <div class="card" style="width: 18rem; margin-bottom:1em;">
                   <div class="card-body">
-                     <h5 class="card-title">Title</h5>
-                     <p class="card-text">Some content</p>
+                     <h5 class="card-title">{{post.title | e}}</h5> <span class="post_author">By <strong>{{post.author_name|e}}</strong></span>
+                     <p class="card-text">{{post.createdAt | date("d M, Y")}}</p>
+                     <p class="post_content">{{post.content | e}}</p>
                   </div>
                </div>
-            </div>
+                 {% endfor %}
+             {% endif %}
          </div>
+     </div>
+     </div>
       </div>
 
       <!-- Latest compiled and minified CSS -->

@@ -5,6 +5,8 @@ const passport =  require("passport");
 const bodyParser =  require("body-parser");
 // we're calling in the mongoose schema user
 const User = require("./models/user");
+// we're calling in the mongoose schema post
+const Post = require("./models/post");
 
 //we're setting up the strategy to provide security
 const LocalStrategy =  require("passport-local");
@@ -48,9 +50,9 @@ app.listen(port ,function (err) {
 });
 
 // get our views set up
-app.get("/", (req,res) =>{
-    res.render("home", { user: req.user })
-})
+// app.get("/", (req,res) =>{
+//     res.render("home", { user: req.user })
+// })
 app.get("/login", (req,res) =>{
     res.render("login")
 })
@@ -76,6 +78,46 @@ app.post("/register",(req,res)=>{
     })
 
 });
+
+// view the posts on the home page
+
+app.get('/', (req, res) => {
+    // FETCH ALL POSTS FROM DATABASE
+    console.log(req);
+    Post.find()
+    // SET descending ORDER BY createdAt
+    .sort({createdAt: 'descending'})
+    .then(result => {
+        if(result){
+            // RENDERING HOME VIEW WITH ALL POSTS
+            res.render('home',{
+                allpost:result
+            });
+        }
+    })
+    .catch(err => {
+        if (err) throw err;
+    }); 
+});
+
+// let the user post their data from the dashboard into the database
+app.post('/dashboard', (req, res) => {
+    // console.log(req.body.title);
+    new Post({
+        title:req.body.title,
+        content:req.body.content,
+        author_name:req.body.author
+    })
+    .save()
+    .then(result => {
+        // dont keep reloading the page
+        res.redirect('/dashboard');
+    })
+    .catch(err => {
+        if (err) throw err;
+    });
+});
+
 
 // set up the functionality for logging in an existing user
 
