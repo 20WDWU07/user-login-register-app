@@ -8,9 +8,7 @@ const User = require("./models/user");
 
 //we're setting up the strategy to provide security
 const LocalStrategy =  require("passport-local");
-passport.serializeUser(User.serializeUser());
-passport.deserializeUser(User.deserializeUser()); 
-passport.use(new LocalStrategy(User.authenticate()));
+
 
 const passportLocalMongoose =  require("passport-local-mongoose"); ////simplifies the integration between Mongoose and Passport for local authentication
 const twig = require('twig');
@@ -24,10 +22,14 @@ const mongourl = "mongodb+srv://test_1:admintim@cluster0.p4iym.mongodb.net/node-
 
 mongoose.connect(mongourl, { useUnifiedTopology: true });
 app.use(require("express-session")({
-    secret:"Hello i am talking right now", //decode or encode session, this is used to compute the hash.
+    secret:"any normal word", //decode or encode session, this is used to compute the hash.
     resave: false,              //What this does is tell the session store that a particular session is still active, in the browser
     saveUninitialized:false    //the session cookie will not be set on the browser unless the session is modified
 }));
+
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser()); 
+passport.use(new LocalStrategy(User.authenticate()));
 
 // add the bodyParser so we can return our information to the database
 app.use(bodyParser.urlencoded({ extended:true }))
@@ -47,16 +49,13 @@ app.listen(port ,function (err) {
 
 // get our views set up
 app.get("/", (req,res) =>{
-    res.render("home")
+    res.render("home", { user: req.user })
 })
 app.get("/login", (req,res) =>{
     res.render("login")
 })
 app.get("/register", (req,res) =>{
     res.render("register")
-})
-app.get("/dashboard", (req,res) =>{
-    res.render("dashboard")
 })
 
 // set up the functionality for registering a new user
@@ -77,3 +76,30 @@ app.post("/register",(req,res)=>{
     })
 
 });
+
+// set up the functionality for logging in an existing user
+
+app.post("/login", passport.authenticate("local",{
+        successRedirect:"/dashboard",
+        failureRedirect:"/login"
+    })
+);
+
+// logout functionality 
+
+app.get("/logout",(req,res)=>{  // logout function
+    req.logout();
+    res.redirect("/");
+});
+
+function isLoggedIn(req, res, next) {
+    if (req.isAuthenticated()) 
+                return next();
+            res.redirect('/');     
+}
+
+// stop users from seeing the dashboard if they haven't logged in
+app.get("/dashboard", isLoggedIn,(req,res) =>{
+	res.render('dashboard.html', { user: req.user })
+})
+

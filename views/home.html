@@ -16,6 +16,9 @@
          <div class="row">
             <div class="col">
                <h1>Welcome to my App</h1>
+               {% if user %}
+               <p>You are logged in as {{user.username |e}}!</p>
+               {% endif %}
             </div>
          </div>
       </div>
